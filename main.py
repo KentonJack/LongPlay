@@ -4,24 +4,12 @@
 
 
 """
-Python 3.4.4
-Pygame 1.9.1
-基于Python及其模块Pygame实现的LongPlay音乐播放器
-支持MP3, OGG, WAV格式的音频
-默认随机播放
-可以用上下箭头或点击音量图标控制音量
-可以用左右箭头或点击前后图标切换音乐
-可以用空格键开始或暂停音乐
-按停止键有2.5秒淡出效果
-可添加或删除音乐
-有用户注册及登录功能
-由正则表达式匹配用户名与密码
-可选择是否注册账户
-使用MD5方法进行数据加密
+Python 3.6.1
+Pygame 1.9.3
 """
 
 
-# 导入所需模块5
+# necessary modules
 import sys
 import pygame
 from pygame.locals import *
@@ -33,17 +21,18 @@ import re
 import pickle
 import pprint
 import shutil
+import Log
 
 
-# 存放音乐文件的位置
+# directory of storing music files
 MUSIC_PATH = 'source'
 
 
-# 屏幕大小
+# screen size
 SCREEN_SIZE = (1000, 625)
 
 
-# 背景图片
+# background picture
 background_image_filename = 'image/background.jpg'
 disk_image_filename = 'image/disk.png'
 stick_image_filename = 'image/stick.png'
@@ -51,8 +40,12 @@ bar_image_filename = 'image/bar.png'
 circle_image_filename = 'image/circle.png'
 
 
-# 设置字典初始值为N/A
+# set dict default as N/A
 db = defaultdict(lambda: 'N/A')
+# label popularity
+pop = 0
+grand = 0
+pure = 0
 
 
 # 语言
@@ -176,7 +169,7 @@ class Registration(object):
 
 
 # 中文注册登录
-class RegistrationChinese(object):
+'''class RegistrationChinese(object):
 
 	def __init__(self):
 		self.username = ''
@@ -255,9 +248,10 @@ class RegistrationChinese(object):
 		b = self.login()
 		while not b:
 			b = self.login()
+'''
 
 
-# 初始化模块
+# initialize modules
 class ModuleInit(object):
 
 	def __init__(self):
@@ -273,7 +267,7 @@ class ModuleInit(object):
 			print('Warning, sound disabled!')
 
 
-# 加载背景
+# load background
 class Background(object):
 
 	def __init__(self):
@@ -298,7 +292,7 @@ class Background(object):
 		pygame.display.update()
 
 
-# 按钮渲染
+# render buttons
 class Button(object):
 
 	def __init__(self, image_filename, position):
@@ -324,7 +318,7 @@ class Button(object):
 		return in_x and in_y
 
 
-# 喜好功能
+# preference function
 class Preference(object):
 
 	def __init__(self, image_filename, position):
@@ -349,7 +343,7 @@ class Preference(object):
 		return in_x and in_y
 
 
-# 音乐播放模式
+# music playing mode
 class Mode(object):
 
 	def __init__(self, image_filename, position):
@@ -374,7 +368,7 @@ class Mode(object):
 		return in_x and in_y
 
 
-# 选项
+# option
 class Options(object):
 
 	def __init__(self, image_filename, position):
@@ -399,7 +393,7 @@ class Options(object):
 		return in_x and in_y
 
 
-# 音量设置
+# set volume
 class VolumeSet(object):
 
 	def __init__(self, image_filename, position):
@@ -424,7 +418,7 @@ class VolumeSet(object):
 		return in_x and in_y
 
 
-# 进度条
+# progress bar
 class ProgressBar(object):
 
 	def __init__(self):
@@ -445,7 +439,7 @@ class ProgressBar(object):
 		return in_x and in_y
 
 
-# 编辑
+# editing
 class Edit(object):
 
 	def __init__(self, image_filename, position):
@@ -470,7 +464,7 @@ class Edit(object):
 		return in_x and in_y
 
 
-# 从source文件夹读取音乐文件
+# read music files from 'source/'
 class GetMusic(object):
 
 	def __init__(self):
@@ -487,6 +481,7 @@ class GetMusic(object):
 		return sorted(music_files)
 
 
+'''
 # 语言选择
 L = Language()
 lan_number = L.choose(L)
@@ -531,18 +526,19 @@ try:
 except lan_number != '1' and lan_number != '2':
 	print('Error')
 	sys.exit()
+'''
 
 
-# 初始化
+# initialize
 MI = ModuleInit()
 MI.load(MI)
 
-# 坐标
+# coordinates
 x1 = 210
 y1 = 480
 button_width = 150
 
-# 控制按钮
+# controlling buttons
 buttons = {}
 pass
 buttons['prev'] = Button('image/prev.png', (x1, y1))
@@ -551,50 +547,50 @@ buttons['stop'] = Button('image/stop.png', (x1 + button_width * 2, y1))
 buttons['play'] = Button('image/play.png', (x1 + button_width * 3, y1))
 buttons['next'] = Button('image/next.png', (x1 + button_width * 4, y1))
 
-# 喜好按钮
+# preference button
 preferences = {}
 pass
 preferences['dislike'] = Preference('image/full_heart.png', (50, 550))
 
-# 播放模式按钮
+# playing mode button
 modes = {}
 pass
 modes['loop'] = Mode('image/loop.png', (912, 550))
 modes['shuffle'] = Mode('image/shuffle.png', (942, 550))
 modes['repeat'] = Mode('image/repeat.png', (970, 550))
 
-# 选项按钮
+# option button
 options = {}
 pass
 options['option'] = Options('image/option.png', (970, 30))
 
-# 音量按钮
+# volume buttons
 volumes = {}
 pass
 volumes['up'] = VolumeSet('image/volume_up.png', (942, 600))
 volumes['down'] = VolumeSet('image/volume_down.png', (970, 600))
 
-# 编辑按钮
+# editing button
 edits = {}
 pass
 edits['plus'] = Edit('image/plus.png', (30, 30))
 edits['minus'] = Edit('image/minus.png', (60, 30))
 
-# 加载音乐
+# load music
 GM = GetMusic()
 music_filenames = GM.path(GM, MUSIC_PATH)
 if len(music_filenames) == 0:
 	print('No music files found in ', MUSIC_PATH)
 	sys.exit()
 
-# 设置字体
+# set font
 font = pygame.font.SysFont('Arial', 50, False)
-# 错误处理
+# handle error
 if not pygame.font:
 	print('Warning, font disabled!')
 label_surfaces = []
 
-# 文件名显示
+# show the filename
 for filename in music_filenames:
 	txt = os.path.split(filename)[-1]
 	print('Track:', txt)
@@ -605,20 +601,20 @@ for filename in music_filenames:
 current_track = 0
 max_tracks = len(music_filenames)
 
-# 加载音乐
+# load music
 pygame.mixer.music.load(music_filenames[current_track])
 
 clock = pygame.time.Clock()
 
-# 设置播放状态
+# set playing condition
 playing = False
 paused = False
 
 track_end = USEREVENT + 1
 pygame.mixer.music.set_endevent(track_end)
 
-
-# 主程序循环
+Log.Login()
+# main loop
 while True:
 	screen = pygame.display.set_mode(SCREEN_SIZE, 0)
 
@@ -631,7 +627,7 @@ while True:
 
 	pressed_keys = pygame.key.get_pressed()
 
-	# 键盘按键控制
+	# keyboard control
 	if pressed_keys[K_UP]:
 		pygame.mixer.music.set_volume(pygame.mixer.music.get_volume() + 0.1)
 	if pressed_keys[K_DOWN]:
@@ -654,55 +650,67 @@ while True:
 			playing = True
 			paused = False
 
-	# 监听事件
+	# waiting for events
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			sys.exit()
 		if event.type == MOUSEBUTTONDOWN:
-			# 判断哪个控制按钮被按下
+			# decide which button is pressed
 			for button_name, button in buttons.items():
 				if button.is_over(event.pos):
 					print(button_name, 'pressed')
 					button_pressed = button_name
 					break
 
-			# 判断是否按下喜好按钮
+			# decide whether preference button is pressed
 			for preference_push, preference in preferences.items():
 				if preference.is_over(event.pos):
 					print(preference_push, 'Prefer')
 					preference_pressed = preference_push
 					break
 
-			# 判断是否按下设置按钮
+			# decide whether option button is pressed
 			for option_push, option in options.items():
 				if option.is_over(event.pos):
 					print(option_push, 'Option')
 					option_pressed = option_push
 					break
 
-			# 判断是否按下音量按钮
+			# decide whether volume button is pressed
 			for volume_push, volume in volumes.items():
 				if volume.is_over(event.pos):
 					print(volume_push, 'Volume')
 					volume_pressed = volume_push
 					break
 
-			# 判断是否切换播放模式
+			# decide whether change playing mode
 			for mode_push, mode in modes.items():
 				if mode.is_over(event.pos):
 					print(mode_push, 'Mode')
 					mode_pressed = mode_push
 					break
 
-			# 判断是否按下编辑按钮
+			# decide whether editing button is pressed
 			for edit_push, edit in edits.items():
 				if edit.is_over(event.pos):
 					print(edit_push, 'Edit')
 					edit_pressed = edit_push
 					break
 
-		# 如果一曲播放结束，就“模拟”按下"next"
+		# if one song ends, then simulate pressing 'next' button
 		if event.type == track_end:
+			if current_track == 0:
+				pure += 1
+				print(pure)
+			elif current_track == 1:
+				pure += 1
+				grand += 1
+			elif current_track == 2:
+				pop += 1
+			with open('info/record.txt', 'w') as f:
+				f.write(str(pop) + '\n')
+				f.write(str(grand) + '\n')
+				f.write(str(pure))
 			button_pressed = 'next'
 
 		if edit_pressed is not None:
@@ -743,36 +751,36 @@ while True:
 				preferences['like'] = Preference('image/full_heart.png', (50, 550))
 				preferences['like'].render(screen)
 			if preference_pressed == 'like':
-				# 加载背景
+				# load background
 				_BG = Background()
 				_BG.load_image(_BG)
 
-				# 写当前歌名
+				# write current song's name
 				_label = label_surfaces[current_track]
 				w1, h1 = _label.get_size()
 				screen_w1 = SCREEN_SIZE[0]
 				screen.blit(_label, ((screen_w1 - w1) / 2 + 10, 520))
 
-				# 画控制按钮
+				# draw control buttons
 				for button in buttons.values():
 					button.render(screen)
-				# 画喜好按钮
+				# draw preference button
 				for preference in preferences.values():
 					preferences['dislike'].render(screen)
-				# 画播放模式按钮
+				# draw playing mode buttons
 				for mode in modes.values():
 					mode.render(screen)
-				# 画选项按钮
+				# draw option button
 				for option in options.values():
 					option.render(screen)
-				# 画音量按钮
+				# draw volume buttons
 				for volume in volumes.values():
 					volume.render(screen)
 
-				# 帧率设置
+				# set the frame rate
 				clock.tick(50)
 
-				# 页面刷新
+				# refresh the page
 				pygame.display.update()
 
 		if button_pressed is not None:
@@ -783,8 +791,8 @@ while True:
 					pygame.mixer.music.play()
 
 			elif button_pressed == 'prev':
-				# 按下prev的逻辑：
-				# 如果已经播放音乐超过了3秒，就从头开始，否则就播放上一首
+				# After pressing 'prev' button：
+				# if playing music longer than 3s, restart; otherwise play the previous song
 				if pygame.mixer.music.get_pos() > 3000:
 					pygame.mixer.music.stop()
 					pygame.mixer.music.play()
@@ -803,7 +811,7 @@ while True:
 					paused = True
 
 			elif button_pressed == 'stop':
-				# 淡出效果
+				# fade
 				pygame.mixer.music.fadeout(2500)
 				playing = False
 
@@ -816,41 +824,41 @@ while True:
 						pygame.mixer.music.play()
 						playing = True
 
-	# 加载背景
+	# load background
 	BG = Background()
 	BG.load_image(BG)
 
-	# 写当前歌名
+	# write current song's name
 	label = label_surfaces[current_track]
 	w, h = label.get_size()
 	screen_w = SCREEN_SIZE[0]
 	screen.blit(label, ((screen_w - w) / 2 + 10, 520))
 
-	# 画控制按钮
+	# draw control buttons
 	for button in buttons.values():
 		button.render(screen)
-	# 画喜好按钮
+	# draw preference button
 	for preference in preferences.values():
 		preferences['dislike'].render(screen)
-	# 画播放模式按钮
+	# draw playing mode buttons
 	for mode in modes.values():
 		mode.render(screen)
-	# 画选项按钮
+	# draw option button
 	for option in options.values():
 		option.render(screen)
-	# 画音量按钮
+	# draw volume buttons
 	for volume in volumes.values():
 		volume.render(screen)
-	# 画编辑按钮
+	# draw edit button
 	for edit in edits.values():
 		edit.render(screen)
 
-	# 画进度条
+	# draw progress bar
 	PB = ProgressBar()
 	PB.render(screen)
 
-	# 帧率设置
+	# set frame rate
 	clock.tick(50)
 
-	# 页面刷新
+	# refresh page
 	pygame.display.update()
